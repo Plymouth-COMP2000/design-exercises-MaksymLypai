@@ -5,35 +5,35 @@ import android.os.Bundle;
 import androidx.appcompat.app.AppCompatActivity;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 
-public class AccountActivity extends AppCompatActivity {
+public class MenuActivity extends AppCompatActivity {
 
     private BottomNavigationView bottomNavigation;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_account);
+        setContentView(R.layout.activity_menu);
 
         // Initialize bottom navigation
-        bottomNavigation = findViewById(R.id.bottom_navigation);
+        bottomNavigation = findViewById(R.id.bottomNavigation);
 
-        // Set Account as selected
-        bottomNavigation.setSelectedItemId(R.id.navigation_account);
+        // Set Menu as selected
+        bottomNavigation.setSelectedItemId(R.id.navigation_menu);
 
-        // Handle bottom navigation clicks
+        // Handle navigation item clicks
         bottomNavigation.setOnItemSelectedListener(item -> {
             int itemId = item.getItemId();
 
             if (itemId == R.id.navigation_menu) {
-                startActivity(new Intent(AccountActivity.this, MenuActivity.class));
-                finish();
+                // Already on Menu
                 return true;
             } else if (itemId == R.id.navigation_reservations) {
-                startActivity(new Intent(AccountActivity.this, ReservationsActivity.class));
+                startActivity(new Intent(MenuActivity.this, ReservationsActivity.class));
                 finish();
                 return true;
             } else if (itemId == R.id.navigation_account) {
-                // Already on Account
+                startActivity(new Intent(MenuActivity.this, AccountActivity.class));
+                finish();
                 return true;
             }
 

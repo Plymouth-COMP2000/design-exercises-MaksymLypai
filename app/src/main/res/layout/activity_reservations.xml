@@ -82,6 +82,7 @@
                     android:gravity="center">
 
                     <Button
+                        android:id="@+id/btnEditReservation1"
                         android:layout_width="120dp"
                         android:layout_height="wrap_content"
                         android:text="Edit"
@@ -90,6 +91,7 @@
                         android:layout_marginEnd="12dp"/>
 
                     <Button
+                        android:id="@+id/btnDeleteReservation1"
                         android:layout_width="120dp"
                         android:layout_height="wrap_content"
                         android:text="Delete"
@@ -149,6 +151,7 @@
                     android:gravity="center">
 
                     <Button
+                        android:id="@+id/btnEditReservation2"
                         android:layout_width="120dp"
                         android:layout_height="wrap_content"
                         android:text="Edit"
@@ -157,6 +160,7 @@
                         android:layout_marginEnd="12dp"/>
 
                     <Button
+                        android:id="@+id/btnDeleteReservation2"
                         android:layout_width="120dp"
                         android:layout_height="wrap_content"
                         android:text="Delete"
@@ -170,6 +174,7 @@
 
     <!-- Add new reservation button -->
     <Button
+        android:id="@+id/btnAddReservation"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="+ Add new reservation"
