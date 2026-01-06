@@ -5,7 +5,12 @@ import android.os.Bundle;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
+
 import androidx.appcompat.app.AppCompatActivity;
+
+import com.example.dineeasy.database.entities.Reservation;
+import com.example.dineeasy.repository.ReservationRepository;
+import com.example.dineeasy.utils.SessionManager;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 
 public class AddReservationActivity extends AppCompatActivity {
@@ -17,14 +22,18 @@ public class AddReservationActivity extends AppCompatActivity {
     private Button buttonCancel;
     private BottomNavigationView bottomNavigation;
     private boolean isEditMode = false;
-    private String bookingId;
+    private int reservationId;
+    private ReservationRepository reservationRepository;
+    private SessionManager sessionManager;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_add_reservation);
 
-        // Initialize views
+        sessionManager = new SessionManager(this);
+        reservationRepository = new ReservationRepository(this);
+
         editDate = findViewById(R.id.editDate);
         editTime = findViewById(R.id.editTime);
         editPeople = findViewById(R.id.editPeople);
@@ -32,18 +41,15 @@ public class AddReservationActivity extends AppCompatActivity {
         buttonCancel = findViewById(R.id.buttonCancel);
         bottomNavigation = findViewById(R.id.bottom_navigation);
 
-        // Check if in edit mode
         Intent intent = getIntent();
         if (intent != null && intent.getBooleanExtra("isEdit", false)) {
             isEditMode = true;
-            bookingId = intent.getStringExtra("bookingId");
+            reservationId = intent.getIntExtra("reservationId", 0);
 
-            // Pre-fill form with existing data
             editDate.setText(intent.getStringExtra("date"));
             editTime.setText(intent.getStringExtra("time"));
             editPeople.setText(intent.getStringExtra("people"));
 
-            // Change button text to "Update"
             buttonSave.setText("Update");
         }
 
@@ -71,37 +77,88 @@ public class AddReservationActivity extends AppCompatActivity {
             return false;
         });
 
-        // Handle Save/Update button
         buttonSave.setOnClickListener(v -> {
             String date = editDate.getText().toString().trim();
             String time = editTime.getText().toString().trim();
-            String people = editPeople.getText().toString().trim();
+            String peopleStr = editPeople.getText().toString().trim();
 
-            // Basic validation
-            if (date.isEmpty() || time.isEmpty() || people.isEmpty()) {
+            if (date.isEmpty() || time.isEmpty() || peopleStr.isEmpty()) {
                 Toast.makeText(AddReservationActivity.this, "Please fill in all fields", Toast.LENGTH_SHORT).show();
                 return;
             }
 
+            int numberOfPeople;
+            try {
+                numberOfPeople = Integer.parseInt(peopleStr);
+            } catch (NumberFormatException e) {
+                Toast.makeText(AddReservationActivity.this, "Invalid number of people", Toast.LENGTH_SHORT).show();
+                return;
+            }
+
             if (isEditMode) {
-                // Update existing reservation
-                Toast.makeText(AddReservationActivity.this, "Reservation updated successfully", Toast.LENGTH_SHORT).show();
-                // Go back to reservations list
-                finish();
+                Reservation reservation = new Reservation();
+                reservation.setId(reservationId);
+                reservation.setUsername(sessionManager.getUsername());
+                reservation.setDate(date);
+                reservation.setTime(time);
+                reservation.setNumberOfPeople(numberOfPeople);
+                reservation.setStatus("Confirmed");
+
+                reservationRepository.updateReservation(reservation, new ReservationRepository.DataCallback<Boolean>() {
+                    @Override
+                    public void onSuccess(Boolean result) {
+                        runOnUiThread(() -> {
+                            Toast.makeText(AddReservationActivity.this, "Reservation updated successfully", Toast.LENGTH_SHORT).show();
+                            finish();
+                        });
+                    }
+
+                    @Override
+                    public void onError(String errorMessage) {
+                        runOnUiThread(() -> {
+                            Toast.makeText(AddReservationActivity.this, "Error updating reservation: " + errorMessage, Toast.LENGTH_SHORT).show();
+                        });
+                    }
+                });
             } else {
-                // Create new reservation - navigate to confirmation screen
-                Intent confirmIntent = new Intent(AddReservationActivity.this, ConfirmationActivity.class);
-                confirmIntent.putExtra("date", date);
-                confirmIntent.putExtra("time", time);
-                confirmIntent.putExtra("people", people);
-                startActivity(confirmIntent);
-                finish();
+                Reservation reservation = new Reservation();
+                reservation.setUsername(sessionManager.getUsername());
+                reservation.setDate(date);
+                reservation.setTime(time);
+                reservation.setNumberOfPeople(numberOfPeople);
+                reservation.setStatus("Confirmed");
+
+                reservationRepository.insertReservation(reservation, new ReservationRepository.DataCallback<Long>() {
+                    @Override
+                    public void onSuccess(Long result) {
+                        runOnUiThread(() -> {
+                            Intent confirmIntent = new Intent(AddReservationActivity.this, ConfirmationActivity.class);
+                            confirmIntent.putExtra("date", date);
+                            confirmIntent.putExtra("time", time);
+                            confirmIntent.putExtra("people", peopleStr);
+                            startActivity(confirmIntent);
+                            finish();
+                        });
+                    }
+
+                    @Override
+                    public void onError(String errorMessage) {
+                        runOnUiThread(() -> {
+                            Toast.makeText(AddReservationActivity.this, "Error creating reservation: " + errorMessage, Toast.LENGTH_SHORT).show();
+                        });
+                    }
+                });
             }
         });
 
-        // Handle Cancel button
         buttonCancel.setOnClickListener(v -> {
-            finish(); // Go back to previous screen
+            finish();
         });
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        reservationRepository.shutdown();
     }
 }

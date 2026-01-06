@@ -1,6 +1,7 @@
 package com.example.dineeasy.database.entities;
 
 import androidx.room.Entity;
+import androidx.room.Ignore;
 import androidx.room.PrimaryKey;
 
 @Entity(tableName = "reservations")
@@ -14,6 +15,10 @@ public class Reservation {
     private int numberOfPeople;
     private String status;  // e.g., "Confirmed", "Pending", "Cancelled"
 
+    public Reservation() {
+    }
+
+    @Ignore
     public Reservation(String username, String date, String time, int numberOfPeople, String status) {
         this.username = username;
         this.date = date;
