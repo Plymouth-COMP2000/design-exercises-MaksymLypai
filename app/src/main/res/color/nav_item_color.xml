@@ -1,0 +1,4 @@
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:color="#1C1F4C" android:state_checked="true"/> <!-- DineEasy navy -->
+    <item android:color="#9E9E9E"/> <!-- light grey when not selected -->
+</selector>
