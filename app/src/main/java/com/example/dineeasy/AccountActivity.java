@@ -5,6 +5,7 @@ import android.os.Bundle;
 import android.widget.Button;
 import android.widget.TextView;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.SwitchCompat;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 
 import com.example.dineeasy.models.User;
@@ -18,6 +19,8 @@ public class AccountActivity extends AppCompatActivity {
     private TextView userName;
     private TextView userEmail;
     private Button btnLogout;
+    private SwitchCompat switchReservationUpdates;
+    private SwitchCompat switchMenuUpdates;
     private SessionManager sessionManager;
     private UserRepository userRepository;
 
@@ -35,12 +38,27 @@ public class AccountActivity extends AppCompatActivity {
         userName = findViewById(R.id.userName);
         userEmail = findViewById(R.id.userEmail);
         btnLogout = findViewById(R.id.btnLogout);
+        switchReservationUpdates = findViewById(R.id.switchReservationUpdates);
+        switchMenuUpdates = findViewById(R.id.switchMenuUpdates);
 
         // Set Account as selected
         bottomNavigation.setSelectedItemId(R.id.navigation_account);
 
         // Load user data
         loadUserData();
+
+        // Load notification preferences
+        switchReservationUpdates.setChecked(sessionManager.areReservationNotificationsEnabled());
+        switchMenuUpdates.setChecked(sessionManager.areMenuNotificationsEnabled());
+
+        // Handle notification switches
+        switchReservationUpdates.setOnCheckedChangeListener((buttonView, isChecked) -> {
+            sessionManager.setReservationNotificationsEnabled(isChecked);
+        });
+
+        switchMenuUpdates.setOnCheckedChangeListener((buttonView, isChecked) -> {
+            sessionManager.setMenuNotificationsEnabled(isChecked);
+        });
 
         // Handle bottom navigation clicks
         bottomNavigation.setOnItemSelectedListener(item -> {

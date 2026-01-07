@@ -13,6 +13,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.example.dineeasy.adapters.ReservationAdapter;
 import com.example.dineeasy.database.entities.Reservation;
 import com.example.dineeasy.repository.ReservationRepository;
+import com.example.dineeasy.utils.NotificationHelper;
 import com.example.dineeasy.utils.SessionManager;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 
@@ -26,6 +27,7 @@ public class ReservationsActivity extends AppCompatActivity implements Reservati
     private ReservationAdapter reservationAdapter;
     private ReservationRepository reservationRepository;
     private SessionManager sessionManager;
+    private NotificationHelper notificationHelper;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -34,6 +36,7 @@ public class ReservationsActivity extends AppCompatActivity implements Reservati
 
         sessionManager = new SessionManager(this);
         reservationRepository = new ReservationRepository(this);
+        notificationHelper = new NotificationHelper(this);
 
         bottomNavigation = findViewById(R.id.bottom_navigation);
         recyclerViewReservations = findViewById(R.id.recyclerViewReservations);
@@ -152,6 +155,58 @@ public class ReservationsActivity extends AppCompatActivity implements Reservati
                             });
                         }
                     });
+                })
+                .setNegativeButton("Cancel", null)
+                .show();
+    }
+
+    @Override
+    public void onStatusChangeClick(Reservation reservation) {
+        String[] statuses = {"Confirmed", "Pending", "Cancelled"};
+        int currentStatusIndex = 0;
+
+        for (int i = 0; i < statuses.length; i++) {
+            if (statuses[i].equals(reservation.getStatus())) {
+                currentStatusIndex = i;
+                break;
+            }
+        }
+
+        new AlertDialog.Builder(this)
+                .setTitle("Change Reservation Status")
+                .setSingleChoiceItems(statuses, currentStatusIndex, null)
+                .setPositiveButton("Update", (dialog, which) -> {
+                    int selectedPosition = ((AlertDialog) dialog).getListView().getCheckedItemPosition();
+                    String newStatus = statuses[selectedPosition];
+                    String oldStatus = reservation.getStatus();
+
+                    if (!newStatus.equals(oldStatus)) {
+                        reservation.setStatus(newStatus);
+                        reservationRepository.updateReservation(reservation, new ReservationRepository.DataCallback<Boolean>() {
+                            @Override
+                            public void onSuccess(Boolean result) {
+                                runOnUiThread(() -> {
+                                    Toast.makeText(ReservationsActivity.this, "Status updated to " + newStatus, Toast.LENGTH_SHORT).show();
+
+                                    // Send notification to the user about status change
+                                    notificationHelper.sendReservationStatusUpdate(
+                                            reservation.getDate(),
+                                            reservation.getTime(),
+                                            newStatus
+                                    );
+
+                                    loadReservations();
+                                });
+                            }
+
+                            @Override
+                            public void onError(String errorMessage) {
+                                runOnUiThread(() -> {
+                                    Toast.makeText(ReservationsActivity.this, "Error updating status: " + errorMessage, Toast.LENGTH_SHORT).show();
+                                });
+                            }
+                        });
+                    }
                 })
                 .setNegativeButton("Cancel", null)
                 .show();

@@ -26,6 +26,7 @@ public class ReservationAdapter extends RecyclerView.Adapter<ReservationAdapter.
     public interface OnReservationClickListener {
         void onEditClick(Reservation reservation);
         void onDeleteClick(Reservation reservation);
+        void onStatusChangeClick(Reservation reservation);
     }
 
     public ReservationAdapter(boolean isStaff, OnReservationClickListener listener) {
@@ -58,8 +59,10 @@ public class ReservationAdapter extends RecyclerView.Adapter<ReservationAdapter.
         if (isStaff) {
             holder.tvReservationUsername.setVisibility(View.VISIBLE);
             holder.tvReservationUsername.setText("User: " + reservation.getUsername());
+            holder.btnChangeStatus.setVisibility(View.VISIBLE);
         } else {
             holder.tvReservationUsername.setVisibility(View.GONE);
+            holder.btnChangeStatus.setVisibility(View.GONE);
         }
 
         switch (reservation.getStatus()) {
@@ -83,6 +86,12 @@ public class ReservationAdapter extends RecyclerView.Adapter<ReservationAdapter.
             }
         });
 
+        holder.btnChangeStatus.setOnClickListener(v -> {
+            if (listener != null) {
+                listener.onStatusChangeClick(reservation);
+            }
+        });
+
         holder.btnDeleteReservation.setOnClickListener(v -> {
             if (listener != null) {
                 listener.onDeleteClick(reservation);
@@ -99,7 +108,7 @@ public class ReservationAdapter extends RecyclerView.Adapter<ReservationAdapter.
         TextView tvReservationDate, tvReservationTime, tvReservationPeople;
         TextView tvReservationStatus, tvReservationUsername;
         LinearLayout layoutActions;
-        Button btnEditReservation, btnDeleteReservation;
+        Button btnEditReservation, btnChangeStatus, btnDeleteReservation;
 
         public ReservationViewHolder(@NonNull View itemView) {
             super(itemView);
@@ -110,6 +119,7 @@ public class ReservationAdapter extends RecyclerView.Adapter<ReservationAdapter.
             tvReservationUsername = itemView.findViewById(R.id.tvReservationUsername);
             layoutActions = itemView.findViewById(R.id.layoutActions);
             btnEditReservation = itemView.findViewById(R.id.btnEditReservation);
+            btnChangeStatus = itemView.findViewById(R.id.btnChangeStatus);
             btnDeleteReservation = itemView.findViewById(R.id.btnDeleteReservation);
         }
     }

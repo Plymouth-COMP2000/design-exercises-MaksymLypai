@@ -10,6 +10,7 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.dineeasy.database.entities.Reservation;
 import com.example.dineeasy.repository.ReservationRepository;
+import com.example.dineeasy.utils.NotificationHelper;
 import com.example.dineeasy.utils.SessionManager;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 
@@ -25,6 +26,7 @@ public class AddReservationActivity extends AppCompatActivity {
     private int reservationId;
     private ReservationRepository reservationRepository;
     private SessionManager sessionManager;
+    private NotificationHelper notificationHelper;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -33,6 +35,7 @@ public class AddReservationActivity extends AppCompatActivity {
 
         sessionManager = new SessionManager(this);
         reservationRepository = new ReservationRepository(this);
+        notificationHelper = new NotificationHelper(this);
 
         editDate = findViewById(R.id.editDate);
         editTime = findViewById(R.id.editTime);
@@ -132,6 +135,9 @@ public class AddReservationActivity extends AppCompatActivity {
                     @Override
                     public void onSuccess(Long result) {
                         runOnUiThread(() -> {
+                            // Send confirmation notification
+                            notificationHelper.sendReservationConfirmation(date, time, numberOfPeople);
+
                             Intent confirmIntent = new Intent(AddReservationActivity.this, ConfirmationActivity.class);
                             confirmIntent.putExtra("date", date);
                             confirmIntent.putExtra("time", time);

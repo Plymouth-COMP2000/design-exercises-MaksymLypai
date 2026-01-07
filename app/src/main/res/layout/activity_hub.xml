@@ -46,12 +46,12 @@
         app:layout_constraintEnd_toEndOf="parent"
         android:layout_marginTop="32dp" />
 
-    <!-- My Reservations Button -->
+    <!-- Reservations Button -->
     <Button
         android:id="@+id/btnReservations"
         android:layout_width="220dp"
         android:layout_height="60dp"
-        android:text="My reservations"
+        android:text="Reservations"
         android:textColor="#FFFFFF"
         android:textSize="16sp"
         android:backgroundTint="#1C1F4C"

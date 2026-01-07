@@ -45,4 +45,23 @@ public class SessionManager {
         editor.clear();
         editor.apply();
     }
+
+    // Notification preferences
+    public void setReservationNotificationsEnabled(boolean enabled) {
+        editor.putBoolean("notif_reservations", enabled);
+        editor.apply();
+    }
+
+    public boolean areReservationNotificationsEnabled() {
+        return prefs.getBoolean("notif_reservations", true);
+    }
+
+    public void setMenuNotificationsEnabled(boolean enabled) {
+        editor.putBoolean("notif_menu", enabled);
+        editor.apply();
+    }
+
+    public boolean areMenuNotificationsEnabled() {
+        return prefs.getBoolean("notif_menu", true);
+    }
 }

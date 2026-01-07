@@ -14,6 +14,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.example.dineeasy.adapters.MenuAdapter;
 import com.example.dineeasy.database.entities.MenuItem;
 import com.example.dineeasy.repository.MenuRepository;
+import com.example.dineeasy.utils.NotificationHelper;
 import com.example.dineeasy.utils.SessionManager;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
@@ -29,6 +30,7 @@ public class MenuActivity extends AppCompatActivity implements MenuAdapter.OnMen
     private MenuAdapter menuAdapter;
     private MenuRepository menuRepository;
     private SessionManager sessionManager;
+    private NotificationHelper notificationHelper;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -37,6 +39,7 @@ public class MenuActivity extends AppCompatActivity implements MenuAdapter.OnMen
 
         sessionManager = new SessionManager(this);
         menuRepository = new MenuRepository(this);
+        notificationHelper = new NotificationHelper(this);
 
         recyclerViewMenu = findViewById(R.id.recyclerViewMenu);
         searchView = findViewById(R.id.searchView);
@@ -128,6 +131,10 @@ public class MenuActivity extends AppCompatActivity implements MenuAdapter.OnMen
                         public void onSuccess(Boolean result) {
                             runOnUiThread(() -> {
                                 Toast.makeText(MenuActivity.this, menuItem.getName() + " deleted successfully", Toast.LENGTH_SHORT).show();
+
+                                // Send notification about menu change
+                                notificationHelper.sendMenuUpdate(menuItem.getName(), "deleted");
+
                                 loadMenuItems();
                             });
                         }
