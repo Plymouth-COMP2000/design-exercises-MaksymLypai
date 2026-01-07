@@ -129,7 +129,7 @@ public class AddReservationActivity extends AppCompatActivity {
                 reservation.setDate(date);
                 reservation.setTime(time);
                 reservation.setNumberOfPeople(numberOfPeople);
-                reservation.setStatus("Confirmed");
+                reservation.setStatus("Pending");
 
                 reservationRepository.insertReservation(reservation, new ReservationRepository.DataCallback<Long>() {
                     @Override

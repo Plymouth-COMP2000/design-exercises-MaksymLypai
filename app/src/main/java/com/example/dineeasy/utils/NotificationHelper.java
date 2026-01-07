@@ -11,6 +11,11 @@ import androidx.core.app.NotificationCompat;
 
 import com.example.dineeasy.R;
 import com.example.dineeasy.ReservationsActivity;
+import com.example.dineeasy.database.AppDatabase;
+import com.example.dineeasy.database.entities.NotificationEntity;
+
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 public class NotificationHelper {
     private static final String CHANNEL_ID = "dineeasy_reservations";
@@ -21,11 +26,15 @@ public class NotificationHelper {
     private final Context context;
     private final NotificationManager notificationManager;
     private final SessionManager sessionManager;
+    private final AppDatabase database;
+    private final ExecutorService executorService;
 
     public NotificationHelper(Context context) {
         this.context = context.getApplicationContext();
         this.notificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
         this.sessionManager = new SessionManager(context);
+        this.database = AppDatabase.getInstance(context);
+        this.executorService = Executors.newSingleThreadExecutor();
         createNotificationChannel();
     }
 
@@ -46,14 +55,14 @@ public class NotificationHelper {
             return;
         }
 
-        String title = "Reservation Confirmed";
-        String message = String.format("Your reservation for %d people on %s at %s has been confirmed.",
+        String title = "Reservation Received";
+        String message = String.format("Your reservation for %d people on %s at %s has been received and is pending confirmation.",
                 numberOfPeople, date, time);
 
         sendNotification(NOTIFICATION_ID_BASE, title, message, ReservationsActivity.class);
     }
 
-    public void sendReservationStatusUpdate(String date, String time, String newStatus) {
+    public void sendReservationStatusUpdate(String username, String date, String time, String newStatus) {
         if (!sessionManager.areReservationNotificationsEnabled()) {
             return;
         }
@@ -62,7 +71,7 @@ public class NotificationHelper {
         String message = String.format("Your reservation on %s at %s is now %s.",
                 date, time, newStatus);
 
-        sendNotification(NOTIFICATION_ID_BASE + 1, title, message, ReservationsActivity.class);
+        sendNotification(NOTIFICATION_ID_BASE + 1, title, message, ReservationsActivity.class, username);
     }
 
     public void sendMenuUpdate(String itemName, String action) {
@@ -84,6 +93,13 @@ public class NotificationHelper {
     }
 
     private void sendNotification(int notificationId, String title, String message, Class<?> activityClass) {
+        sendNotification(notificationId, title, message, activityClass, sessionManager.getUsername());
+    }
+
+    private void sendNotification(int notificationId, String title, String message, Class<?> activityClass, String targetUsername) {
+        // Save to database
+        saveNotificationToDatabase(title, message, targetUsername);
+
         Intent intent = new Intent(context, activityClass);
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
 
@@ -104,5 +120,18 @@ public class NotificationHelper {
                 .setAutoCancel(true);
 
         notificationManager.notify(notificationId, builder.build());
+    }
+
+    private void saveNotificationToDatabase(String title, String message, String targetUsername) {
+        executorService.execute(() -> {
+            NotificationEntity notification = new NotificationEntity();
+            notification.setUsername(targetUsername);
+            notification.setTitle(title);
+            notification.setMessage(message);
+            notification.setTimestamp(System.currentTimeMillis());
+            notification.setRead(false);
+
+            database.notificationDao().insertNotification(notification);
+        });
     }
 }

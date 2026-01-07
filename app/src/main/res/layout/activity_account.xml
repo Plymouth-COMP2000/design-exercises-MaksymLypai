@@ -210,6 +210,24 @@
                     android:trackTint="#D6D6D6" />
             </LinearLayout>
 
+            <!-- Notification History Section -->
+            <TextView
+                android:id="@+id/notificationHistoryTitle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Recent Notifications:"
+                android:textColor="#1C1F4C"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                android:layout_marginTop="20dp"
+                android:layout_marginBottom="12dp" />
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/recyclerViewNotifications"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="16dp" />
+
         </LinearLayout>
     </ScrollView>
 

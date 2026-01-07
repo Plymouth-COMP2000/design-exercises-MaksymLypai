@@ -188,8 +188,9 @@ public class ReservationsActivity extends AppCompatActivity implements Reservati
                                 runOnUiThread(() -> {
                                     Toast.makeText(ReservationsActivity.this, "Status updated to " + newStatus, Toast.LENGTH_SHORT).show();
 
-                                    // Send notification to the user about status change
+                                    // Send notification to the reservation owner about status change
                                     notificationHelper.sendReservationStatusUpdate(
+                                            reservation.getUsername(),
                                             reservation.getDate(),
                                             reservation.getTime(),
                                             newStatus

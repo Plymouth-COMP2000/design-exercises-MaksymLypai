@@ -6,12 +6,21 @@ import android.widget.Button;
 import android.widget.TextView;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.SwitchCompat;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 
+import com.example.dineeasy.adapters.NotificationAdapter;
+import com.example.dineeasy.database.AppDatabase;
+import com.example.dineeasy.database.entities.NotificationEntity;
 import com.example.dineeasy.models.User;
 import com.example.dineeasy.repository.UserRepository;
 import com.example.dineeasy.utils.Constants;
 import com.example.dineeasy.utils.SessionManager;
+
+import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 public class AccountActivity extends AppCompatActivity {
 
@@ -21,8 +30,12 @@ public class AccountActivity extends AppCompatActivity {
     private Button btnLogout;
     private SwitchCompat switchReservationUpdates;
     private SwitchCompat switchMenuUpdates;
+    private RecyclerView recyclerViewNotifications;
+    private NotificationAdapter notificationAdapter;
     private SessionManager sessionManager;
     private UserRepository userRepository;
+    private AppDatabase database;
+    private ExecutorService executorService;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -32,6 +45,8 @@ public class AccountActivity extends AppCompatActivity {
         // Initialize session manager and repository
         sessionManager = new SessionManager(this);
         userRepository = new UserRepository();
+        database = AppDatabase.getInstance(this);
+        executorService = Executors.newSingleThreadExecutor();
 
         // Initialize views
         bottomNavigation = findViewById(R.id.bottom_navigation);
@@ -40,12 +55,21 @@ public class AccountActivity extends AppCompatActivity {
         btnLogout = findViewById(R.id.btnLogout);
         switchReservationUpdates = findViewById(R.id.switchReservationUpdates);
         switchMenuUpdates = findViewById(R.id.switchMenuUpdates);
+        recyclerViewNotifications = findViewById(R.id.recyclerViewNotifications);
+
+        // Setup notification history RecyclerView
+        recyclerViewNotifications.setLayoutManager(new LinearLayoutManager(this));
+        notificationAdapter = new NotificationAdapter();
+        recyclerViewNotifications.setAdapter(notificationAdapter);
 
         // Set Account as selected
         bottomNavigation.setSelectedItemId(R.id.navigation_account);
 
         // Load user data
         loadUserData();
+
+        // Load notification history
+        loadNotificationHistory();
 
         // Load notification preferences
         switchReservationUpdates.setChecked(sessionManager.areReservationNotificationsEnabled());
@@ -123,9 +147,21 @@ public class AccountActivity extends AppCompatActivity {
         }
     }
 
+    private void loadNotificationHistory() {
+        executorService.execute(() -> {
+            List<NotificationEntity> notifications = database.notificationDao()
+                    .getRecentNotifications(sessionManager.getUsername());
+
+            runOnUiThread(() -> {
+                notificationAdapter.setNotifications(notifications);
+            });
+        });
+    }
+
     @Override
     protected void onDestroy() {
         super.onDestroy();
         userRepository.shutdown();
+        executorService.shutdown();
     }
 }
