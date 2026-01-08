@@ -40,6 +40,11 @@
             android:name=".MenuActivity"
             android:exported="false" />
 
+        <!-- Menu Item Details Activity -->
+        <activity
+            android:name=".MenuItemDetailsActivity"
+            android:exported="false" />
+
         <!-- Reservations Activity -->
         <activity
             android:name=".ReservationsActivity"

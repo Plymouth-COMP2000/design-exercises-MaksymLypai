@@ -53,7 +53,8 @@ public class MenuActivity extends AppCompatActivity implements MenuAdapter.OnMen
         if (sessionManager.isStaff()) {
             fabAddItem.setVisibility(View.VISIBLE);
             fabAddItem.setOnClickListener(v -> {
-                Toast.makeText(this, "Add menu item feature coming soon", Toast.LENGTH_SHORT).show();
+                Intent intent = new Intent(MenuActivity.this, MenuItemDetailsActivity.class);
+                startActivity(intent);
             });
         }
 
@@ -117,7 +118,9 @@ public class MenuActivity extends AppCompatActivity implements MenuAdapter.OnMen
 
     @Override
     public void onEditClick(MenuItem menuItem) {
-        Toast.makeText(this, "Edit " + menuItem.getName() + " - Coming soon", Toast.LENGTH_SHORT).show();
+        Intent intent = new Intent(MenuActivity.this, MenuItemDetailsActivity.class);
+        intent.putExtra("MENU_ITEM_ID", menuItem.getId());
+        startActivity(intent);
     }
 
     @Override
@@ -149,6 +152,12 @@ public class MenuActivity extends AppCompatActivity implements MenuAdapter.OnMen
                 })
                 .setNegativeButton("Cancel", null)
                 .show();
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        loadMenuItems();
     }
 
     @Override
